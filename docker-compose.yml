@@ -22,7 +22,7 @@ services:
       - TELEGRAM_HOME_CHANNEL=${TELEGRAM_ALLOWED_USERS}
       - DENO_DEPLOY_TOKEN=${DENO_DEPLOY_TOKEN}
       - VERCEL_TOKEN=${VERCEL_TOKEN}
-      - GH_TOKEN=${GH_TOKEN}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
     deploy:
       resources:
         limits:
