@@ -21,6 +21,7 @@ services:
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - TELEGRAM_HOME_CHANNEL=${TELEGRAM_ALLOWED_USERS}
       - DENO_DEPLOY_TOKEN=${DENO_DEPLOY_TOKEN}
+      - VERCEL_TOKEN=${VERCEL_TOKEN}
     deploy:
       resources:
         limits:
