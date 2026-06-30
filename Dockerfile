@@ -15,8 +15,7 @@ RUN apt-get update \
 
 # Deno CLI — enables `deno deploy` (token via DENO_DEPLOY_TOKEN at runtime)
 ENV DENO_INSTALL=/usr/local
-ARG DENO_VERSION=v2.2.12
-RUN curl -fsSL https://deno.land/install.sh | sh -s ${DENO_VERSION}
+RUN curl -fsSL https://deno.land/install.sh | sh
 
 # Speech-to-text for voice memo transcription
 RUN uv pip install --python /opt/hermes/.venv/bin/python faster-whisper
