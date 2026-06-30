@@ -34,4 +34,14 @@ RUN npm install -g vercel
 # Speech-to-text for voice memo transcription
 RUN uv pip install --python /opt/hermes/.venv/bin/python faster-whisper
 
+# Auto-load /opt/data/.env in shells (gh, vercel, deno, etc.)
+COPY scripts/load-data-env.sh /etc/hermes/load-data-env.sh
+RUN chmod 644 /etc/hermes/load-data-env.sh \
+    && ln -sf /etc/hermes/load-data-env.sh /etc/profile.d/hermes-data-env.sh \
+    && HERMES_HOME_DIR="$(getent passwd hermes | cut -d: -f6)" \
+    && printf '\n# Load Hermes/user env vars\n. /etc/hermes/load-data-env.sh\n' >> "${HERMES_HOME_DIR}/.bashrc"
+
+# Non-interactive bash (Hermes tool subprocesses) also sources this
+ENV BASH_ENV=/etc/hermes/load-data-env.sh
+
 USER hermes

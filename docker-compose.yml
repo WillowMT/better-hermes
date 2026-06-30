@@ -26,6 +26,7 @@ services:
       - DENO_DEPLOY_TOKEN=${DENO_DEPLOY_TOKEN}
       - VERCEL_TOKEN=${VERCEL_TOKEN}
       - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - GH_TOKEN=${GITHUB_TOKEN}
     deploy:
       resources:
         limits:
