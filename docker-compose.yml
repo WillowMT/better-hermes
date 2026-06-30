@@ -1,0 +1,31 @@
+services:
+  hermes-telegram:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        HERMES_VERSION: v2026.6.19
+    image: better-hermes:v2026.6.19
+    container_name: hermes-telegram
+    restart: unless-stopped
+    command: gateway run
+    ports:
+      - "8642:8642"
+      - "9119:9119"
+    volumes:
+      - hermes-telegram-vol:/opt/data
+    environment:
+      - HERMES_DASHBOARD=1
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_ALLOWED_USERS=${TELEGRAM_ALLOWED_USERS}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - TELEGRAM_HOME_CHANNEL=${TELEGRAM_ALLOWED_USERS}
+      - DENO_DEPLOY_TOKEN=${DENO_DEPLOY_TOKEN}
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+          cpus: "2.0"
+
+volumes:
+  hermes-telegram-vol:
