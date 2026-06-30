@@ -17,6 +17,9 @@ RUN apt-get update \
 ENV DENO_INSTALL=/usr/local
 RUN curl -fsSL https://deno.land/install.sh | sh
 
+# Vercel CLI — deploy and manage projects (`vercel`, `vercel deploy`, etc.)
+RUN npm install -g vercel
+
 # Speech-to-text for voice memo transcription
 RUN uv pip install --python /opt/hermes/.venv/bin/python faster-whisper
 
