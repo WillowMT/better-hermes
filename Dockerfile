@@ -34,6 +34,20 @@ RUN npm install -g vercel
 # Speech-to-text for voice memo transcription
 RUN uv pip install --python /opt/hermes/.venv/bin/python faster-whisper
 
+# Platform sidecar Node deps (Photon/iMessage, etc.) — /opt/hermes is read-only
+# at runtime; setup runs `npm ci` here and fails with EACCES without this layer.
+RUN set -eu; \
+    find /opt/hermes/plugins/platforms -path '*/sidecar/package.json' -print0 \
+    | while IFS= read -r -d '' pkg; do \
+        dir="$(dirname "$pkg")"; \
+        chmod u+w "$dir" 2>/dev/null || true; \
+        cd "$dir"; \
+        npm ci --prefer-offline --no-audit \
+          || npm install --prefer-offline --no-audit; \
+        chown -R hermes:hermes "$dir"; \
+        chmod -R u+w "$dir"; \
+      done
+
 # Auto-load /opt/data/.env in shells (gh, vercel, deno, etc.)
 COPY scripts/load-data-env.sh /etc/hermes/load-data-env.sh
 RUN chmod 644 /etc/hermes/load-data-env.sh \
