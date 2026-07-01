@@ -31,8 +31,8 @@ RUN curl -fsSL https://deno.land/install.sh | sh
 # Vercel CLI — deploy and manage projects (`vercel`, `vercel deploy`, etc.)
 RUN npm install -g vercel
 
-# Speech-to-text for voice memo transcription
-RUN uv pip install --python /opt/hermes/.venv/bin/python faster-whisper
+# Speech-to-text for voice memo transcription; Exa web search/extract SDK
+RUN uv pip install --python /opt/hermes/.venv/bin/python faster-whisper "exa-py>=2.9.0,<3"
 
 # Photon sidecar — npm deps must be baked and the dir must stay writable for
 # `hermes photon setup` (which always re-runs npm ci). /opt/hermes is a-w.
