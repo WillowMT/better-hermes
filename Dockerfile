@@ -31,8 +31,11 @@ RUN curl -fsSL https://deno.land/install.sh | sh
 # Vercel CLI — deploy and manage projects (`vercel`, `vercel deploy`, etc.)
 RUN npm install -g vercel
 
-# Speech-to-text for voice memo transcription; Exa web search/extract SDK
-RUN uv pip install --python /opt/hermes/.venv/bin/python faster-whisper "exa-py>=2.9.0,<3"
+# Speech-to-text for voice memo transcription; Exa web search/extract SDK.
+# Hermes Docker disables lazy installs (HERMES_DISABLE_LAZY_INSTALLS=1) and
+# checks exact pins via tools.lazy_deps — must match search.exa (exa-py==2.10.2).
+RUN uv pip install --python /opt/hermes/.venv/bin/python faster-whisper "exa-py==2.10.2" \
+    && /opt/hermes/.venv/bin/python -c "from importlib.metadata import version; assert version('exa-py') == '2.10.2'"
 
 # Photon sidecar — npm deps must be baked and the dir must stay writable for
 # `hermes photon setup` (which always re-runs npm ci). /opt/hermes is a-w.
