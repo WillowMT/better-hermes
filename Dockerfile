@@ -10,6 +10,7 @@ RUN apt-get update \
         nano \
         curl \
         ca-certificates \
+        zip \
         unzip \
     && rm -rf /var/lib/apt/lists/*
 
