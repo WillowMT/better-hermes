@@ -32,6 +32,23 @@ RUN curl -fsSL https://deno.land/install.sh | sh
 # Vercel CLI — deploy and manage projects (`vercel`, `vercel deploy`, etc.)
 RUN npm install -g vercel
 
+# agent-browser CLI — reuses Playwright Chromium already baked in the Hermes base image
+RUN npm install -g agent-browser \
+    && AGENT_BROWSER_BIN="$(find /opt/hermes/.playwright -type f -executable \
+         \( -name 'chrome' -o -name 'chromium' -o -name 'chrome-headless-shell' \
+            -o -name 'headless_shell' -o -name 'chromium-browser' \) \
+         2>/dev/null | head -n 1)" \
+    && if [ -z "$AGENT_BROWSER_BIN" ]; then \
+         echo "ERROR: Playwright Chromium not found under /opt/hermes/.playwright" >&2; \
+         exit 1; \
+       fi \
+    && printf '%s\n' "$AGENT_BROWSER_BIN" > /etc/hermes/agent-browser-executable-path \
+    && chmod 644 /etc/hermes/agent-browser-executable-path \
+    && printf 'export AGENT_BROWSER_EXECUTABLE_PATH=%s\n' "$AGENT_BROWSER_BIN" \
+         > /etc/profile.d/agent-browser-hermes.sh \
+    && chmod 644 /etc/profile.d/agent-browser-hermes.sh \
+    && command -v agent-browser >/dev/null
+
 # Speech-to-text for voice memo transcription; Exa web search/extract SDK.
 # Hermes Docker disables lazy installs (HERMES_DISABLE_LAZY_INSTALLS=1) and
 # checks exact pins via tools.lazy_deps — must match search.exa (exa-py==2.10.2).
