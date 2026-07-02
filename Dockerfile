@@ -32,22 +32,19 @@ RUN curl -fsSL https://deno.land/install.sh | sh
 # Vercel CLI — deploy and manage projects (`vercel`, `vercel deploy`, etc.)
 RUN npm install -g vercel
 
-# agent-browser CLI — reuses Playwright Chromium already baked in the Hermes base image
-RUN npm install -g agent-browser \
-    && AGENT_BROWSER_BIN="$(find /opt/hermes/.playwright -type f -executable \
-         \( -name 'chrome' -o -name 'chromium' -o -name 'chrome-headless-shell' \
-            -o -name 'headless_shell' -o -name 'chromium-browser' \) \
-         2>/dev/null | head -n 1)" \
-    && if [ -z "$AGENT_BROWSER_BIN" ]; then \
-         echo "ERROR: Playwright Chromium not found under /opt/hermes/.playwright" >&2; \
+# agent-browser CLI — browser path resolved at boot (see cont-init script).
+# Install from /tmp: Hermes WORKDIR (/opt/hermes) is read-only in published images.
+WORKDIR /tmp
+RUN npm install -g agent-browser --force \
+    && AB_ROOT="$(npm root -g)/agent-browser" \
+    && node "$AB_ROOT/scripts/postinstall.js" \
+    && NATIVE_BIN="$(find "$AB_ROOT" -type f -executable -name 'agent-browser-*' 2>/dev/null | head -n 1)" \
+    && if [ -z "$NATIVE_BIN" ]; then \
+         echo "ERROR: agent-browser native binary not found after install" >&2; \
          exit 1; \
        fi \
-    && printf '%s\n' "$AGENT_BROWSER_BIN" > /etc/hermes/agent-browser-executable-path \
-    && chmod 644 /etc/hermes/agent-browser-executable-path \
-    && printf 'export AGENT_BROWSER_EXECUTABLE_PATH=%s\n' "$AGENT_BROWSER_BIN" \
-         > /etc/profile.d/agent-browser-hermes.sh \
-    && chmod 644 /etc/profile.d/agent-browser-hermes.sh \
     && command -v agent-browser >/dev/null
+WORKDIR /opt/hermes
 
 # Speech-to-text for voice memo transcription; Exa web search/extract SDK.
 # Hermes Docker disables lazy installs (HERMES_DISABLE_LAZY_INSTALLS=1) and
@@ -70,6 +67,10 @@ RUN PHOTON_SIDECAR=/opt/hermes/plugins/platforms/photon/sidecar \
 # Re-apply sidecar permissions on every boot (before gateway starts)
 COPY scripts/cont-init-photon-sidecar.sh /etc/cont-init.d/025-photon-sidecar-deps
 RUN chmod 0755 /etc/cont-init.d/025-photon-sidecar-deps
+
+# Point agent-browser at Hermes Playwright Chromium on boot
+COPY scripts/cont-init-agent-browser.sh /etc/cont-init.d/026-agent-browser
+RUN chmod 0755 /etc/cont-init.d/026-agent-browser
 
 # Auto-load /opt/data/.env in shells (gh, vercel, deno, etc.)
 COPY scripts/load-data-env.sh /etc/hermes/load-data-env.sh
