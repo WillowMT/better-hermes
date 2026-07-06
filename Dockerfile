@@ -44,7 +44,10 @@ ENV DENO_INSTALL=/usr/local
 RUN curl -fsSL https://deno.land/install.sh | sh
 
 # Vercel CLI — deploy and manage projects (`vercel`, `vercel deploy`, etc.)
-RUN npm install -g vercel
+# Wrangler CLI — Cloudflare Workers, Pages, R2, D1 (`wrangler deploy`, etc.)
+RUN npm install -g vercel wrangler \
+    && command -v vercel >/dev/null \
+    && command -v wrangler >/dev/null
 
 # agent-browser CLI — browser path resolved at boot (see cont-init script).
 # Install from /tmp: Hermes WORKDIR (/opt/hermes) is read-only in published images.
@@ -86,7 +89,7 @@ RUN chmod 0755 /etc/cont-init.d/025-photon-sidecar-deps
 COPY scripts/cont-init-agent-browser.sh /etc/cont-init.d/026-agent-browser
 RUN chmod 0755 /etc/cont-init.d/026-agent-browser
 
-# Auto-load /opt/data/.env in shells (gh, gcloud, vercel, deno, etc.)
+# Auto-load /opt/data/.env in shells (gh, gcloud, vercel, wrangler, deno, etc.)
 COPY scripts/load-data-env.sh /etc/hermes/load-data-env.sh
 RUN chmod 644 /etc/hermes/load-data-env.sh \
     && ln -sf /etc/hermes/load-data-env.sh /etc/profile.d/hermes-data-env.sh \

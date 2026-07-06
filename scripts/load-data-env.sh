@@ -43,3 +43,17 @@ if [ -n "${HOME:-}" ] && [ "$HOME" = "$_sandbox_home" ]; then
     ln -sf "$_gcloud_config" "$_sandbox_gcloud" 2>/dev/null || true
   fi
 fi
+
+# wrangler — OAuth/config under ~/.wrangler; persist on the Hermes data volume
+_wrangler_dir="$_hermes_data/.wrangler"
+mkdir -p "$_wrangler_dir" 2>/dev/null || true
+if [ -n "${HOME:-}" ] && [ "$HOME" = "$_sandbox_home" ] && [ ! -e "$HOME/.wrangler" ]; then
+  ln -sf "$_wrangler_dir" "$HOME/.wrangler" 2>/dev/null || true
+fi
+
+# wrangler — OAuth/config under ~/.wrangler; persist on the Hermes data volume
+_wrangler_dir="$_hermes_data/.wrangler"
+mkdir -p "$_wrangler_dir" 2>/dev/null || true
+if [ -n "${HOME:-}" ] && [ "$HOME" = "$_sandbox_home" ] && [ ! -e "$HOME/.wrangler" ]; then
+  ln -sf "$_wrangler_dir" "$HOME/.wrangler" 2>/dev/null || true
+fi
