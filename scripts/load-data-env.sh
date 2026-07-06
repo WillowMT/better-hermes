@@ -30,3 +30,16 @@ fi
 if [ -z "${AGENT_BROWSER_EXECUTABLE_PATH:-}" ] && [ -f /etc/hermes/agent-browser-executable-path ]; then
   export AGENT_BROWSER_EXECUTABLE_PATH="$(tr -d '[:space:]' < /etc/hermes/agent-browser-executable-path)"
 fi
+
+# gcloud — persist config/credentials on the Hermes data volume, not sandbox HOME
+_gcloud_config="${HERMES_REAL_HOME:-${HERMES_HOME:-/opt/data}}/.config/gcloud"
+mkdir -p "$_gcloud_config" 2>/dev/null || true
+export CLOUDSDK_CONFIG="${CLOUDSDK_CONFIG:-$_gcloud_config}"
+export CLOUDSDK_CORE_DISABLE_PROMPTS="${CLOUDSDK_CORE_DISABLE_PROMPTS:-1}"
+_sandbox_gcloud="$_hermes_data/home/.config/gcloud"
+if [ -n "${HOME:-}" ] && [ "$HOME" = "$_sandbox_home" ]; then
+  mkdir -p "$_hermes_data/home/.config" 2>/dev/null || true
+  if [ ! -e "$_sandbox_gcloud" ]; then
+    ln -sf "$_gcloud_config" "$_sandbox_gcloud" 2>/dev/null || true
+  fi
+fi

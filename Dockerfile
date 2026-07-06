@@ -11,6 +11,7 @@ RUN apt-get update \
         nano \
         curl \
         ca-certificates \
+        gnupg \
         zip \
         unzip \
     && rm -rf /var/lib/apt/lists/*
@@ -25,6 +26,18 @@ RUN mkdir -p -m 755 /etc/apt/keyrings \
     && apt-get update \
     && apt-get install -y --no-install-recommends gh \
     && rm -rf /var/lib/apt/lists/*
+
+# Google Cloud CLI — `gcloud`, `gsutil`, `bq` (config persisted under /opt/data)
+RUN mkdir -p -m 755 /etc/apt/keyrings \
+    && curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg \
+        | gpg --dearmor -o /etc/apt/keyrings/google-cloud.gpg \
+    && chmod go+r /etc/apt/keyrings/google-cloud.gpg \
+    && echo "deb [signed-by=/etc/apt/keyrings/google-cloud.gpg] https://packages.cloud.google.com/apt cloud-sdk main" \
+        > /etc/apt/sources.list.d/google-cloud-sdk.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends google-cloud-cli \
+    && rm -rf /var/lib/apt/lists/* \
+    && gcloud --version
 
 # Deno CLI — enables `deno deploy` (token via DENO_DEPLOY_TOKEN at runtime)
 ENV DENO_INSTALL=/usr/local
@@ -73,7 +86,7 @@ RUN chmod 0755 /etc/cont-init.d/025-photon-sidecar-deps
 COPY scripts/cont-init-agent-browser.sh /etc/cont-init.d/026-agent-browser
 RUN chmod 0755 /etc/cont-init.d/026-agent-browser
 
-# Auto-load /opt/data/.env in shells (gh, vercel, deno, etc.)
+# Auto-load /opt/data/.env in shells (gh, gcloud, vercel, deno, etc.)
 COPY scripts/load-data-env.sh /etc/hermes/load-data-env.sh
 RUN chmod 644 /etc/hermes/load-data-env.sh \
     && ln -sf /etc/hermes/load-data-env.sh /etc/profile.d/hermes-data-env.sh \
