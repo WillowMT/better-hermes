@@ -1,6 +1,7 @@
 # Extend the official Hermes image with tools baked in at build time.
 # Runtime installs into /opt/hermes are disabled in published images.
-ARG HERMES_VERSION=v2026.6.19
+# ARG HERMES_VERSION=v2026.6.19
+ARG HERMES_VERSION=latest
 FROM nousresearch/hermes-agent:${HERMES_VERSION}
 
 USER root
