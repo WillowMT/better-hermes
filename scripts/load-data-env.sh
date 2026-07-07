@@ -51,9 +51,14 @@ if [ -n "${HOME:-}" ] && [ "$HOME" = "$_sandbox_home" ] && [ ! -e "$HOME/.wrangl
   ln -sf "$_wrangler_dir" "$HOME/.wrangler" 2>/dev/null || true
 fi
 
-# wrangler — OAuth/config under ~/.wrangler; persist on the Hermes data volume
-_wrangler_dir="$_hermes_data/.wrangler"
-mkdir -p "$_wrangler_dir" 2>/dev/null || true
-if [ -n "${HOME:-}" ] && [ "$HOME" = "$_sandbox_home" ] && [ ! -e "$HOME/.wrangler" ]; then
-  ln -sf "$_wrangler_dir" "$HOME/.wrangler" 2>/dev/null || true
+# turso — CLI auth/settings under ~/.config/turso; persist on the Hermes data volume
+_turso_config="$_hermes_data/.config/turso"
+mkdir -p "$_turso_config" 2>/dev/null || true
+export TURSO_CONFIG_FOLDER="${TURSO_CONFIG_FOLDER:-$_turso_config}"
+_sandbox_turso="$_hermes_data/home/.config/turso"
+if [ -n "${HOME:-}" ] && [ "$HOME" = "$_sandbox_home" ]; then
+  mkdir -p "$_hermes_data/home/.config" 2>/dev/null || true
+  if [ ! -e "$_sandbox_turso" ]; then
+    ln -sf "$_turso_config" "$_sandbox_turso" 2>/dev/null || true
+  fi
 fi

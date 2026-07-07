@@ -39,6 +39,21 @@ RUN mkdir -p -m 755 /etc/apt/keyrings \
     && rm -rf /var/lib/apt/lists/* \
     && gcloud --version
 
+# Turso CLI — libSQL edge databases (`turso db`, `turso auth`, etc.)
+RUN ARCH="$(dpkg --print-architecture)" \
+    && case "$ARCH" in \
+         amd64) TURSO_ARCH="x86_64" ;; \
+         arm64) TURSO_ARCH="aarch64" ;; \
+         *) echo "Unsupported architecture for turso: $ARCH" >&2; exit 1 ;; \
+       esac \
+    && curl -fsSL \
+         "https://github.com/tursodatabase/homebrew-tap/releases/latest/download/homebrew-tap_Linux_${TURSO_ARCH}.tar.gz" \
+         -o /tmp/turso.tar.gz \
+    && tar -C /usr/local/bin -zxf /tmp/turso.tar.gz turso \
+    && rm /tmp/turso.tar.gz \
+    && chmod +x /usr/local/bin/turso \
+    && turso --version
+
 # Deno CLI — enables `deno deploy` (token via DENO_DEPLOY_TOKEN at runtime)
 ENV DENO_INSTALL=/usr/local
 RUN curl -fsSL https://deno.land/install.sh | sh
@@ -89,7 +104,7 @@ RUN chmod 0755 /etc/cont-init.d/025-photon-sidecar-deps
 COPY scripts/cont-init-agent-browser.sh /etc/cont-init.d/026-agent-browser
 RUN chmod 0755 /etc/cont-init.d/026-agent-browser
 
-# Auto-load /opt/data/.env in shells (gh, gcloud, vercel, wrangler, deno, etc.)
+# Auto-load /opt/data/.env in shells (gh, gcloud, turso, vercel, wrangler, deno, etc.)
 COPY scripts/load-data-env.sh /etc/hermes/load-data-env.sh
 RUN chmod 644 /etc/hermes/load-data-env.sh \
     && ln -sf /etc/hermes/load-data-env.sh /etc/profile.d/hermes-data-env.sh \
