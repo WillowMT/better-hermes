@@ -1,8 +1,11 @@
 # Extend the official Hermes image with tools baked in at build time.
 # Runtime installs into /opt/hermes are disabled in published images.
-# Override via docker-compose build arg / .env HERMES_VERSION (default: latest).
-ARG HERMES_VERSION=latest
+# Override via docker-compose build arg / .env HERMES_VERSION (default: v2026.7.7.2).
+ARG HERMES_VERSION=v2026.7.7.2
 FROM nousresearch/hermes-agent:${HERMES_VERSION}
+
+# Fail fast if the base image is missing Telegram deps (common cause of silent gateway failures).
+RUN /opt/hermes/.venv/bin/python -c "import telegram; print('python-telegram-bot', telegram.__version__)"
 
 USER root
 
