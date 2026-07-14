@@ -1,6 +1,6 @@
 # Extend the official Hermes image with tools baked in at build time.
 # Runtime installs into /opt/hermes are disabled in published images.
-# ARG HERMES_VERSION=v2026.6.19
+# Override via docker-compose build arg / .env HERMES_VERSION (default: latest).
 ARG HERMES_VERSION=latest
 FROM nousresearch/hermes-agent:${HERMES_VERSION}
 

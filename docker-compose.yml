@@ -4,8 +4,8 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        HERMES_VERSION: v2026.6.19
-    image: better-hermes:v2026.6.19
+        HERMES_VERSION: ${HERMES_VERSION:-latest}
+    image: better-hermes:${HERMES_VERSION:-latest}
     container_name: hermes-telegram
     restart: unless-stopped
     command: gateway run
