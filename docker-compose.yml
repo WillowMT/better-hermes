@@ -33,6 +33,7 @@ services:
       - TURSO_AUTH_TOKEN=${TURSO_AUTH_TOKEN}
       - GITHUB_TOKEN=${GITHUB_TOKEN}
       - GH_TOKEN=${GITHUB_TOKEN}
+      - CURSOR_API_KEY=${CURSOR_API_KEY}
     deploy:
       resources:
         limits:

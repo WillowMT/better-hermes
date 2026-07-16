@@ -67,6 +67,16 @@ RUN npm install -g vercel wrangler \
     && command -v vercel >/dev/null \
     && command -v wrangler >/dev/null
 
+# Cursor Agent CLI — headless `agent` (auth via CURSOR_API_KEY at runtime)
+WORKDIR /tmp
+RUN mkdir -p /opt/cursor-agent \
+    && HOME=/opt/cursor-agent bash -c 'curl -fsSL https://cursor.com/install | bash' \
+    && ln -sf /opt/cursor-agent/.local/bin/agent /usr/local/bin/agent \
+    && ln -sf /opt/cursor-agent/.local/bin/cursor-agent /usr/local/bin/cursor-agent \
+    && chown -R hermes:hermes /opt/cursor-agent \
+    && agent --version
+WORKDIR /opt/hermes
+
 # agent-browser CLI — browser path resolved at boot (see cont-init script).
 # Install from /tmp: Hermes WORKDIR (/opt/hermes) is read-only in published images.
 WORKDIR /tmp
@@ -107,7 +117,7 @@ RUN chmod 0755 /etc/cont-init.d/025-photon-sidecar-deps
 COPY scripts/cont-init-agent-browser.sh /etc/cont-init.d/026-agent-browser
 RUN chmod 0755 /etc/cont-init.d/026-agent-browser
 
-# Auto-load /opt/data/.env in shells (gh, gcloud, turso, vercel, wrangler, deno, etc.)
+# Auto-load /opt/data/.env in shells (gh, gcloud, turso, vercel, wrangler, deno, agent, etc.)
 COPY scripts/load-data-env.sh /etc/hermes/load-data-env.sh
 RUN chmod 644 /etc/hermes/load-data-env.sh \
     && ln -sf /etc/hermes/load-data-env.sh /etc/profile.d/hermes-data-env.sh \
