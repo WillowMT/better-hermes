@@ -12,7 +12,7 @@
 - Persistent Hermes state lives on `/opt/data`; `scripts/load-data-env.sh` sources `/opt/data/.env` via `BASH_ENV`, `/etc/profile.d`, and the `hermes` user `.bashrc`.
 - Hermes terminal home isolation sets `HOME=/opt/data/home` while `HERMES_HOME=/opt/data`; tool dirs like `.agent-browser`, `.config/gcloud`, `.wrangler`, and `.config/turso` symlink to canonical paths under `/opt/data`.
 - `docker-compose.yml` passes tokens/secrets from the host `.env` (including `CURSOR_API_KEY` for Cursor Agent CLI); `.env.example` documents expected variables.
-- Baked-in CLIs include gh, gcloud, deno, vercel, wrangler, turso, agent-browser, Cursor Agent (`agent`), zip/unzip, nano, and Python packages faster-whisper and exa-py.
+- Baked-in CLIs include gh, gcloud, deno, vercel, wrangler, turso, agent-browser, Cursor Agent (`agent`), PostgreSQL client (`pg_dumpall`, `pg_dump`, `psql`), zip/unzip, nano, and Python packages faster-whisper and exa-py.
 - agent-browser installs from `/tmp` (base WORKDIR is read-only); Playwright Chromium path and state dir are set at boot via `cont-init-agent-browser.sh`.
 - Photon sidecar deps at `/opt/hermes/plugins/platforms/photon/sidecar` need build-time `npm ci` plus `cont-init-photon-sidecar.sh` on boot so `hermes photon setup` can write `node_modules`.
 - Dashboard auth is required when `HERMES_DASHBOARD=1` binds non-loopback; basic auth uses `HERMES_DASHBOARD_BASIC_AUTH_USERNAME`, `PASSWORD`, and `SECRET` env vars.

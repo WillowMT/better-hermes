@@ -17,7 +17,9 @@ RUN apt-get update \
         gnupg \
         zip \
         unzip \
-    && rm -rf /var/lib/apt/lists/*
+        postgresql-client \
+    && rm -rf /var/lib/apt/lists/* \
+    && pg_dumpall --version
 
 # GitHub CLI — `gh` for repos, PRs, issues, and Actions
 RUN mkdir -p -m 755 /etc/apt/keyrings \
