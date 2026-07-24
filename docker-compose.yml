@@ -34,6 +34,7 @@ services:
       - GITHUB_TOKEN=${GITHUB_TOKEN}
       - GH_TOKEN=${GITHUB_TOKEN}
       - CURSOR_API_KEY=${CURSOR_API_KEY}
+      - BWS_ACCESS_TOKEN=${BWS_ACCESS_TOKEN}
     deploy:
       resources:
         limits:

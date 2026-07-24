@@ -59,6 +59,15 @@ RUN ARCH="$(dpkg --print-architecture)" \
     && chmod +x /usr/local/bin/turso \
     && turso --version
 
+# Bitwarden Secrets Manager CLI — `bws` (auth via BWS_ACCESS_TOKEN at runtime)
+# Official installer may land in ~/.local/bin when sudo is unavailable; normalize to PATH.
+RUN curl -fsSL https://bws.bitwarden.com/install | sh \
+    && if [ ! -x /usr/local/bin/bws ] && [ -x "${HOME}/.local/bin/bws" ]; then \
+         install -m 755 "${HOME}/.local/bin/bws" /usr/local/bin/bws; \
+       fi \
+    && command -v bws >/dev/null \
+    && bws --version
+
 # Deno CLI — enables `deno deploy` (token via DENO_DEPLOY_TOKEN at runtime)
 ENV DENO_INSTALL=/usr/local
 RUN curl -fsSL https://deno.land/install.sh | sh
@@ -119,7 +128,7 @@ RUN chmod 0755 /etc/cont-init.d/025-photon-sidecar-deps
 COPY scripts/cont-init-agent-browser.sh /etc/cont-init.d/026-agent-browser
 RUN chmod 0755 /etc/cont-init.d/026-agent-browser
 
-# Auto-load /opt/data/.env in shells (gh, gcloud, turso, vercel, wrangler, deno, agent, etc.)
+# Auto-load /opt/data/.env in shells (gh, gcloud, turso, vercel, wrangler, deno, agent, bws, etc.)
 COPY scripts/load-data-env.sh /etc/hermes/load-data-env.sh
 RUN chmod 644 /etc/hermes/load-data-env.sh \
     && ln -sf /etc/hermes/load-data-env.sh /etc/profile.d/hermes-data-env.sh \
