@@ -32,18 +32,6 @@ RUN mkdir -p -m 755 /etc/apt/keyrings \
     && apt-get install -y --no-install-recommends gh \
     && rm -rf /var/lib/apt/lists/*
 
-# Google Cloud CLI — `gcloud`, `gsutil`, `bq` (config persisted under /opt/data)
-RUN mkdir -p -m 755 /etc/apt/keyrings \
-    && curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg \
-        | gpg --dearmor -o /etc/apt/keyrings/google-cloud.gpg \
-    && chmod go+r /etc/apt/keyrings/google-cloud.gpg \
-    && echo "deb [signed-by=/etc/apt/keyrings/google-cloud.gpg] https://packages.cloud.google.com/apt cloud-sdk main" \
-        > /etc/apt/sources.list.d/google-cloud-sdk.list \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends google-cloud-cli \
-    && rm -rf /var/lib/apt/lists/* \
-    && gcloud --version
-
 # Turso CLI — libSQL edge databases (`turso db`, `turso auth`, etc.)
 RUN ARCH="$(dpkg --print-architecture)" \
     && case "$ARCH" in \
@@ -72,10 +60,8 @@ RUN curl -fsSL https://bws.bitwarden.com/install | sh \
 ENV DENO_INSTALL=/usr/local
 RUN curl -fsSL https://deno.land/install.sh | sh
 
-# Vercel CLI — deploy and manage projects (`vercel`, `vercel deploy`, etc.)
 # Wrangler CLI — Cloudflare Workers, Pages, R2, D1 (`wrangler deploy`, etc.)
-RUN npm install -g vercel wrangler \
-    && command -v vercel >/dev/null \
+RUN npm install -g wrangler \
     && command -v wrangler >/dev/null
 
 # Cursor Agent CLI — headless `agent` (auth via CURSOR_API_KEY at runtime)
@@ -128,7 +114,7 @@ RUN chmod 0755 /etc/cont-init.d/025-photon-sidecar-deps
 COPY scripts/cont-init-agent-browser.sh /etc/cont-init.d/026-agent-browser
 RUN chmod 0755 /etc/cont-init.d/026-agent-browser
 
-# Auto-load /opt/data/.env in shells (gh, gcloud, turso, vercel, wrangler, deno, agent, bws, etc.)
+# Auto-load /opt/data/.env in shells (gh, turso, wrangler, deno, agent, bws, etc.)
 COPY scripts/load-data-env.sh /etc/hermes/load-data-env.sh
 RUN chmod 644 /etc/hermes/load-data-env.sh \
     && ln -sf /etc/hermes/load-data-env.sh /etc/profile.d/hermes-data-env.sh \
