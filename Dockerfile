@@ -60,6 +60,13 @@ RUN curl -fsSL https://bws.bitwarden.com/install | sh \
 ENV DENO_INSTALL=/usr/local
 RUN curl -fsSL https://deno.land/install.sh | sh
 
+# opencode — terminal AI coding agent (auth via OPENAI/ANTHROPIC keys at runtime)
+# Installer lands in ~/.local/bin (HOME is /root at build); normalize to PATH.
+RUN curl -fsSL https://opencode.ai/install | bash \
+    && install -m 755 "${HOME}/.local/bin/opencode" /usr/local/bin/opencode \
+    && command -v opencode >/dev/null \
+    && opencode --version
+
 # Wrangler CLI — Cloudflare Workers, Pages, R2, D1 (`wrangler deploy`, etc.)
 RUN npm install -g wrangler \
     && command -v wrangler >/dev/null
