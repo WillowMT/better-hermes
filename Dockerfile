@@ -61,9 +61,9 @@ ENV DENO_INSTALL=/usr/local
 RUN curl -fsSL https://deno.land/install.sh | sh
 
 # opencode — terminal AI coding agent (auth via OPENAI/ANTHROPIC keys at runtime)
-# Installer lands in ~/.local/bin (HOME is /root at build); normalize to PATH.
+# Installer lands in ~/.opencode/bin (HOME is /root at build); normalize to PATH.
 RUN curl -fsSL https://opencode.ai/install | bash \
-    && install -m 755 "${HOME}/.local/bin/opencode" /usr/local/bin/opencode \
+    && install -m 755 "${HOME}/.opencode/bin/opencode" /usr/local/bin/opencode \
     && command -v opencode >/dev/null \
     && opencode --version
 
