@@ -69,10 +69,10 @@ RUN curl -fsSL https://opencode.ai/install | bash \
 
 # OpenRouter Ori Harness CLI — configures Hermes, Codex, Claude Code, and OpenCode
 # for optimized OpenRouter gateway usage. Login/config are performed at runtime.
-RUN ORI_INSTALL_DIR=/usr/local/bin ORI_TELEMETRY=0 \
-      curl -fsSL --proto '=https' https://openrouter.ai/labs/ori/install.sh | bash \
-    && command -v ori >/dev/null \
-    && ori --version
+RUN curl -fsSL --proto '=https' https://openrouter.ai/labs/ori/install.sh \
+      | ORI_INSTALL_DIR=/usr/local/bin ORI_TELEMETRY=0 bash \
+    && test -x /usr/local/bin/ori \
+    && /usr/local/bin/ori --version
 
 # Wrangler CLI — Cloudflare Workers, Pages, R2, D1 (`wrangler deploy`, etc.)
 RUN npm install -g wrangler \
