@@ -67,6 +67,11 @@ RUN curl -fsSL https://opencode.ai/install | bash \
     && command -v opencode >/dev/null \
     && opencode --version
 
+# Claude Code — terminal AI coding agent used by `ori claude` (OpenRouter auth via Ori)
+RUN npm install -g @anthropic-ai/claude-code \
+    && command -v claude >/dev/null \
+    && claude --version
+
 # OpenRouter Ori Harness CLI — configures Hermes, Codex, Claude Code, and OpenCode
 # for optimized OpenRouter gateway usage. Login/config are performed at runtime.
 RUN curl -fsSL --proto '=https' https://openrouter.ai/labs/ori/install.sh \
