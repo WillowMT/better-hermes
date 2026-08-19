@@ -74,6 +74,11 @@ RUN curl -fsSL --proto '=https' https://openrouter.ai/labs/ori/install.sh \
     && test -x /usr/local/bin/ori \
     && /usr/local/bin/ori --version
 
+# Notion CLI — manage Notion from the terminal (`ntn`)
+RUN curl -fsSL https://ntn.dev | bash \
+    && command -v ntn >/dev/null \
+    && ntn --version
+
 # Wrangler CLI — Cloudflare Workers, Pages, R2, D1 (`wrangler deploy`, etc.)
 RUN npm install -g wrangler \
     && command -v wrangler >/dev/null
