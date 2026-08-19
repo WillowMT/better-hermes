@@ -9,8 +9,8 @@ services:
     restart: unless-stopped
     command: gateway run
     ports:
-      - "8642:8642"
-      - "9119:9119"
+      - "${HERMES_HOST_PORT:-8642}:8642"
+      - "${HERMES_DASHBOARD_HOST_PORT:-9119}:9119"
     volumes:
       - hermes-telegram-vol:/opt/data
     environment:
