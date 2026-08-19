@@ -12,6 +12,7 @@ RUN apt-get update \
         curl \
         ca-certificates \
         gnupg \
+        pass \
         zip \
         unzip \
         postgresql-client \
