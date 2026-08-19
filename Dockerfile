@@ -60,20 +60,6 @@ RUN curl -fsSL https://bws.bitwarden.com/install | sh \
 ENV DENO_INSTALL=/usr/local
 RUN curl -fsSL https://deno.land/install.sh | sh
 
-# opencode — terminal AI coding agent (auth via OPENAI/ANTHROPIC keys at runtime)
-# Installer lands in ~/.opencode/bin (HOME is /root at build); normalize to PATH.
-RUN curl -fsSL https://opencode.ai/install | bash \
-    && install -m 755 "${HOME}/.opencode/bin/opencode" /usr/local/bin/opencode \
-    && command -v opencode >/dev/null \
-    && opencode --version
-
-# OpenRouter Ori Harness CLI — configures Hermes, Codex, Claude Code, and OpenCode
-# for optimized OpenRouter gateway usage. Login/config are performed at runtime.
-RUN curl -fsSL --proto '=https' https://openrouter.ai/labs/ori/install.sh \
-      | ORI_INSTALL_DIR=/usr/local/bin ORI_TELEMETRY=0 bash \
-    && test -x /usr/local/bin/ori \
-    && /usr/local/bin/ori --version
-
 # Notion CLI — manage Notion from the terminal (`ntn`)
 RUN curl -fsSL https://ntn.dev | bash \
     && command -v ntn >/dev/null \
