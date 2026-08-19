@@ -32,6 +32,9 @@ RUN curl -fsSL https://ntn.dev | bash \
     && command -v ntn >/dev/null \
     && ntn --version
 
-RUN curl -sSL https://raw.githubusercontent.com/pimalaya/himalaya/master/install.sh | PREFIX=~/.local sh
+# Install system-wide because the image runs Hermes as the non-root `hermes` user.
+RUN curl -fsSL https://raw.githubusercontent.com/pimalaya/himalaya/master/install.sh | sh \
+    && command -v himalaya >/dev/null \
+    && himalaya --version
 
 USER hermes
