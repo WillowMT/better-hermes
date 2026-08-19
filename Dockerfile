@@ -21,31 +21,6 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/* \
     && pg_dumpall --version
 
-# GitHub CLI — `gh` for repos, PRs, issues, and Actions
-RUN mkdir -p -m 755 /etc/apt/keyrings \
-    && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
-        -o /etc/apt/keyrings/githubcli-archive-keyring.gpg \
-    && chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
-    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
-        > /etc/apt/sources.list.d/github-cli.list \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends gh \
-    && rm -rf /var/lib/apt/lists/*
-
-# Turso CLI — libSQL edge databases (`turso db`, `turso auth`, etc.)
-RUN ARCH="$(dpkg --print-architecture)" \
-    && case "$ARCH" in \
-         amd64) TURSO_ARCH="x86_64" ;; \
-         arm64) TURSO_ARCH="aarch64" ;; \
-         *) echo "Unsupported architecture for turso: $ARCH" >&2; exit 1 ;; \
-       esac \
-    && curl -fsSL \
-         "https://github.com/tursodatabase/homebrew-tap/releases/latest/download/homebrew-tap_Linux_${TURSO_ARCH}.tar.gz" \
-         -o /tmp/turso.tar.gz \
-    && tar -C /usr/local/bin -zxf /tmp/turso.tar.gz turso \
-    && rm /tmp/turso.tar.gz \
-    && chmod +x /usr/local/bin/turso \
-    && turso --version
 
 # Bitwarden Secrets Manager CLI — `bws` (auth via BWS_ACCESS_TOKEN at runtime)
 # Official installer may land in ~/.local/bin when sudo is unavailable; normalize to PATH.
@@ -60,50 +35,6 @@ RUN curl -fsSL https://bws.bitwarden.com/install | sh \
 RUN curl -fsSL https://ntn.dev | bash \
     && command -v ntn >/dev/null \
     && ntn --version
-
-# Wrangler CLI — Cloudflare Workers, Pages, R2, D1 (`wrangler deploy`, etc.)
-RUN npm install -g wrangler \
-    && command -v wrangler >/dev/null
-
-# agent-browser CLI — browser path resolved at boot (see cont-init script).
-# Install from /tmp: Hermes WORKDIR (/opt/hermes) is read-only in published images.
-WORKDIR /tmp
-RUN npm install -g agent-browser --force \
-    && AB_ROOT="$(npm root -g)/agent-browser" \
-    && node "$AB_ROOT/scripts/postinstall.js" \
-    && NATIVE_BIN="$(find "$AB_ROOT" -type f -executable -name 'agent-browser-*' 2>/dev/null | head -n 1)" \
-    && if [ -z "$NATIVE_BIN" ]; then \
-         echo "ERROR: agent-browser native binary not found after install" >&2; \
-         exit 1; \
-       fi \
-    && command -v agent-browser >/dev/null
-WORKDIR /opt/hermes
-
-# Speech-to-text for voice memo transcription; Exa web search/extract SDK.
-# Hermes Docker disables lazy installs (HERMES_DISABLE_LAZY_INSTALLS=1) and
-# checks exact pins via tools.lazy_deps — must match search.exa (exa-py==2.10.2).
-RUN uv pip install --python /opt/hermes/.venv/bin/python faster-whisper "exa-py==2.10.2" \
-    && /opt/hermes/.venv/bin/python -c "from importlib.metadata import version; assert version('exa-py') == '2.10.2'"
-
-# Photon sidecar — npm deps must be baked and the dir must stay writable for
-# `hermes photon setup` (which always re-runs npm ci). /opt/hermes is a-w.
-RUN PHOTON_SIDECAR=/opt/hermes/plugins/platforms/photon/sidecar \
-    && if [ -f "${PHOTON_SIDECAR}/package.json" ]; then \
-      chmod u+w "${PHOTON_SIDECAR}"; \
-      cd "${PHOTON_SIDECAR}"; \
-      npm ci --prefer-offline --no-audit \
-        || npm install --prefer-offline --no-audit; \
-      chown -R hermes:hermes "${PHOTON_SIDECAR}"; \
-      chmod -R u+w "${PHOTON_SIDECAR}"; \
-    fi
-
-# Re-apply sidecar permissions on every boot (before gateway starts)
-COPY scripts/cont-init-photon-sidecar.sh /etc/cont-init.d/025-photon-sidecar-deps
-RUN chmod 0755 /etc/cont-init.d/025-photon-sidecar-deps
-
-# Point agent-browser at Hermes Playwright Chromium on boot
-COPY scripts/cont-init-agent-browser.sh /etc/cont-init.d/026-agent-browser
-RUN chmod 0755 /etc/cont-init.d/026-agent-browser
 
 # Auto-load /opt/data/.env in shells (gh, turso, wrangler, bws, etc.)
 COPY scripts/load-data-env.sh /etc/hermes/load-data-env.sh
