@@ -56,10 +56,6 @@ RUN curl -fsSL https://bws.bitwarden.com/install | sh \
     && command -v bws >/dev/null \
     && bws --version
 
-# Deno CLI — enables `deno deploy` (token via DENO_DEPLOY_TOKEN at runtime)
-ENV DENO_INSTALL=/usr/local
-RUN curl -fsSL https://deno.land/install.sh | sh
-
 # Notion CLI — manage Notion from the terminal (`ntn`)
 RUN curl -fsSL https://ntn.dev | bash \
     && command -v ntn >/dev/null \
@@ -68,16 +64,6 @@ RUN curl -fsSL https://ntn.dev | bash \
 # Wrangler CLI — Cloudflare Workers, Pages, R2, D1 (`wrangler deploy`, etc.)
 RUN npm install -g wrangler \
     && command -v wrangler >/dev/null
-
-# Cursor Agent CLI — headless `agent` (auth via CURSOR_API_KEY at runtime)
-WORKDIR /tmp
-RUN mkdir -p /opt/cursor-agent \
-    && HOME=/opt/cursor-agent bash -c 'curl -fsSL https://cursor.com/install | bash' \
-    && ln -sf /opt/cursor-agent/.local/bin/agent /usr/local/bin/agent \
-    && ln -sf /opt/cursor-agent/.local/bin/cursor-agent /usr/local/bin/cursor-agent \
-    && chown -R hermes:hermes /opt/cursor-agent \
-    && agent --version
-WORKDIR /opt/hermes
 
 # agent-browser CLI — browser path resolved at boot (see cont-init script).
 # Install from /tmp: Hermes WORKDIR (/opt/hermes) is read-only in published images.
@@ -119,7 +105,7 @@ RUN chmod 0755 /etc/cont-init.d/025-photon-sidecar-deps
 COPY scripts/cont-init-agent-browser.sh /etc/cont-init.d/026-agent-browser
 RUN chmod 0755 /etc/cont-init.d/026-agent-browser
 
-# Auto-load /opt/data/.env in shells (gh, turso, wrangler, deno, agent, bws, etc.)
+# Auto-load /opt/data/.env in shells (gh, turso, wrangler, bws, etc.)
 COPY scripts/load-data-env.sh /etc/hermes/load-data-env.sh
 RUN chmod 644 /etc/hermes/load-data-env.sh \
     && ln -sf /etc/hermes/load-data-env.sh /etc/profile.d/hermes-data-env.sh \
