@@ -120,4 +120,6 @@ RUN chmod 644 /etc/hermes/load-data-env.sh \
 # Non-interactive bash (Hermes tool subprocesses) also sources this
 ENV BASH_ENV=/etc/hermes/load-data-env.sh
 
-USER hermes
+# Keep PID 1 as root so upstream s6 init can repair persistent-volume
+# ownership. Its supervised services drop privileges to the hermes user.
+USER root
