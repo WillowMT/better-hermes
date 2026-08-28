@@ -65,57 +65,8 @@ RUN curl -fsSL https://ntn.dev | bash \
 RUN npm install -g wrangler \
     && command -v wrangler >/dev/null
 
-# agent-browser CLI — browser path resolved at boot (see cont-init script).
-# Install from /tmp: Hermes WORKDIR (/opt/hermes) is read-only in published images.
-WORKDIR /tmp
-RUN npm install -g agent-browser --force \
-    && AB_ROOT="$(npm root -g)/agent-browser" \
-    && node "$AB_ROOT/scripts/postinstall.js" \
-    && NATIVE_BIN="$(find "$AB_ROOT" -type f -executable -name 'agent-browser-*' 2>/dev/null | head -n 1)" \
-    && if [ -z "$NATIVE_BIN" ]; then \
-         echo "ERROR: agent-browser native binary not found after install" >&2; \
-         exit 1; \
-       fi \
-    && command -v agent-browser >/dev/null
-WORKDIR /opt/hermes
-
-# Speech-to-text for voice memo transcription; Exa web search/extract SDK.
-# Hermes Docker disables lazy installs (HERMES_DISABLE_LAZY_INSTALLS=1) and
-# checks exact pins via tools.lazy_deps — must match search.exa (exa-py==2.10.2).
-RUN uv pip install --python /opt/hermes/.venv/bin/python faster-whisper "exa-py==2.10.2" \
-    && /opt/hermes/.venv/bin/python -c "from importlib.metadata import version; assert version('exa-py') == '2.10.2'"
-
-# Photon sidecar — npm deps must be baked and the dir must stay writable for
-# `hermes photon setup` (which always re-runs npm ci). /opt/hermes is a-w.
-RUN PHOTON_SIDECAR=/opt/hermes/plugins/platforms/photon/sidecar \
-    && if [ -f "${PHOTON_SIDECAR}/package.json" ]; then \
-      chmod u+w "${PHOTON_SIDECAR}"; \
-      cd "${PHOTON_SIDECAR}"; \
-      npm ci --prefer-offline --no-audit \
-        || npm install --prefer-offline --no-audit; \
-      chown -R hermes:hermes "${PHOTON_SIDECAR}"; \
-      chmod -R u+w "${PHOTON_SIDECAR}"; \
-    fi
-
-# WhatsApp bridge — bake Node dependencies into the immutable image. The boot
-# initializer copies this install into /opt/data, avoiding runtime npm access.
-RUN WHATSAPP_BRIDGE=/opt/hermes/scripts/whatsapp-bridge \
-    && test -f "${WHATSAPP_BRIDGE}/package-lock.json" \
-    && cd "${WHATSAPP_BRIDGE}" \
-    && npm ci --prefer-offline --no-audit \
-    && node -e "const fs=require('fs'),crypto=require('crypto'); const hash=crypto.createHash('sha256').update(fs.readFileSync('package.json')).digest('hex').slice(0,16); fs.writeFileSync('node_modules/.hermes-pkg-hash', hash)"
-
-# Re-apply sidecar permissions on every boot (before gateway starts)
-COPY scripts/cont-init-photon-sidecar.sh /etc/cont-init.d/025-photon-sidecar-deps
-RUN chmod 0755 /etc/cont-init.d/025-photon-sidecar-deps
-
-# Seed the persistent WhatsApp bridge from the build-time dependency install.
-COPY scripts/cont-init-whatsapp-bridge.sh /etc/cont-init.d/026-whatsapp-bridge
-RUN chmod 0755 /etc/cont-init.d/026-whatsapp-bridge
-
-# Point agent-browser at Hermes Playwright Chromium on boot
-COPY scripts/cont-init-agent-browser.sh /etc/cont-init.d/027-agent-browser
-RUN chmod 0755 /etc/cont-init.d/027-agent-browser
+# Speech-to-text for voice memo transcription.
+RUN uv pip install --python /opt/hermes/.venv/bin/python faster-whisper
 
 # Auto-load /opt/data/.env in shells (gh, turso, wrangler, bws, etc.)
 COPY scripts/load-data-env.sh /etc/hermes/load-data-env.sh
