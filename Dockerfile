@@ -101,9 +101,14 @@ RUN PHOTON_SIDECAR=/opt/hermes/plugins/platforms/photon/sidecar \
 COPY scripts/cont-init-photon-sidecar.sh /etc/cont-init.d/025-photon-sidecar-deps
 RUN chmod 0755 /etc/cont-init.d/025-photon-sidecar-deps
 
+# WhatsApp bridge dependencies are installed under the persistent data volume.
+# Initialize ownership before the non-root gateway attempts `npm install`.
+COPY scripts/cont-init-whatsapp-bridge.sh /etc/cont-init.d/026-whatsapp-bridge
+RUN chmod 0755 /etc/cont-init.d/026-whatsapp-bridge
+
 # Point agent-browser at Hermes Playwright Chromium on boot
-COPY scripts/cont-init-agent-browser.sh /etc/cont-init.d/026-agent-browser
-RUN chmod 0755 /etc/cont-init.d/026-agent-browser
+COPY scripts/cont-init-agent-browser.sh /etc/cont-init.d/027-agent-browser
+RUN chmod 0755 /etc/cont-init.d/027-agent-browser
 
 # Auto-load /opt/data/.env in shells (gh, turso, wrangler, bws, etc.)
 COPY scripts/load-data-env.sh /etc/hermes/load-data-env.sh
