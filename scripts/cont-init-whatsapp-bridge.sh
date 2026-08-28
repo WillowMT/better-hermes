@@ -1,11 +1,30 @@
 #!/command/with-contenv sh
-# The gateway installs the WhatsApp bridge into the persistent data volume as
-# the hermes user. Prepare the directory before the non-root gateway starts.
+# Seed the writable data-volume bridge from the dependency-complete image copy.
 set -eu
 
-WHATSAPP_BRIDGE="/opt/data/scripts/whatsapp-bridge"
+IMAGE_BRIDGE="/opt/hermes/scripts/whatsapp-bridge"
+DATA_BRIDGE="/opt/data/scripts/whatsapp-bridge"
 
-mkdir -p "$WHATSAPP_BRIDGE"
-chown -R hermes:hermes "$WHATSAPP_BRIDGE"
+if [ ! -f "$IMAGE_BRIDGE/package.json" ]; then
+  echo "[whatsapp-bridge] Image bridge is unavailable; skipping"
+  exit 0
+fi
 
-echo "[whatsapp-bridge] Persistent bridge directory is writable"
+mkdir -p "$DATA_BRIDGE"
+
+# Keep bridge source synchronized with the selected Hermes image.
+for file in "$IMAGE_BRIDGE"/*.js "$IMAGE_BRIDGE"/package*.json; do
+  [ -e "$file" ] && cp -a "$file" "$DATA_BRIDGE/"
+done
+
+# Refresh dependencies only when the baked package hash changes.
+if ! cmp -s \
+  "$IMAGE_BRIDGE/node_modules/.hermes-pkg-hash" \
+  "$DATA_BRIDGE/node_modules/.hermes-pkg-hash"; then
+  rm -rf "$DATA_BRIDGE/node_modules"
+  cp -a "$IMAGE_BRIDGE/node_modules" "$DATA_BRIDGE/node_modules"
+fi
+
+chown -R hermes:hermes "$DATA_BRIDGE"
+
+echo "[whatsapp-bridge] Baked dependencies are ready"

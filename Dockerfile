@@ -97,12 +97,19 @@ RUN PHOTON_SIDECAR=/opt/hermes/plugins/platforms/photon/sidecar \
       chmod -R u+w "${PHOTON_SIDECAR}"; \
     fi
 
+# WhatsApp bridge — bake Node dependencies into the immutable image. The boot
+# initializer copies this install into /opt/data, avoiding runtime npm access.
+RUN WHATSAPP_BRIDGE=/opt/hermes/scripts/whatsapp-bridge \
+    && test -f "${WHATSAPP_BRIDGE}/package-lock.json" \
+    && cd "${WHATSAPP_BRIDGE}" \
+    && npm ci --prefer-offline --no-audit \
+    && node -e "const fs=require('fs'),crypto=require('crypto'); const hash=crypto.createHash('sha256').update(fs.readFileSync('package.json')).digest('hex').slice(0,16); fs.writeFileSync('node_modules/.hermes-pkg-hash', hash)"
+
 # Re-apply sidecar permissions on every boot (before gateway starts)
 COPY scripts/cont-init-photon-sidecar.sh /etc/cont-init.d/025-photon-sidecar-deps
 RUN chmod 0755 /etc/cont-init.d/025-photon-sidecar-deps
 
-# WhatsApp bridge dependencies are installed under the persistent data volume.
-# Initialize ownership before the non-root gateway attempts `npm install`.
+# Seed the persistent WhatsApp bridge from the build-time dependency install.
 COPY scripts/cont-init-whatsapp-bridge.sh /etc/cont-init.d/026-whatsapp-bridge
 RUN chmod 0755 /etc/cont-init.d/026-whatsapp-bridge
 
