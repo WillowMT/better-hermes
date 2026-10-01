@@ -32,21 +32,6 @@ RUN mkdir -p -m 755 /etc/apt/keyrings \
     && apt-get install -y --no-install-recommends gh \
     && rm -rf /var/lib/apt/lists/*
 
-# Turso CLI — libSQL edge databases (`turso db`, `turso auth`, etc.)
-RUN ARCH="$(dpkg --print-architecture)" \
-    && case "$ARCH" in \
-         amd64) TURSO_ARCH="x86_64" ;; \
-         arm64) TURSO_ARCH="aarch64" ;; \
-         *) echo "Unsupported architecture for turso: $ARCH" >&2; exit 1 ;; \
-       esac \
-    && curl -fsSL \
-         "https://github.com/tursodatabase/homebrew-tap/releases/latest/download/homebrew-tap_Linux_${TURSO_ARCH}.tar.gz" \
-         -o /tmp/turso.tar.gz \
-    && tar -C /usr/local/bin -zxf /tmp/turso.tar.gz turso \
-    && rm /tmp/turso.tar.gz \
-    && chmod +x /usr/local/bin/turso \
-    && turso --version
-
 # Bitwarden Secrets Manager CLI — `bws` (auth via BWS_ACCESS_TOKEN at runtime)
 # Official installer may land in ~/.local/bin when sudo is unavailable; normalize to PATH.
 RUN curl -fsSL https://bws.bitwarden.com/install | sh \
