@@ -46,12 +46,13 @@ RUN curl -fsSL https://ntn.dev | bash \
     && command -v ntn >/dev/null \
     && ntn --version
 
-# Wrangler CLI — Cloudflare Workers, Pages, R2, D1 (`wrangler deploy`, etc.)
-RUN npm install -g wrangler \
-    && command -v wrangler >/dev/null
+# Wrangler is used via `npx wrangler` (not installed globally); npm 12 caches
+# it under HOME on the persisted data volume.
 
 # Speech-to-text for voice memo transcription.
-RUN uv pip install --python /opt/hermes/.venv/bin/python faster-whisper
+# The base image no longer exposes the pm-managed uv on PATH.
+RUN ln -sf /opt/hermes/tools/uv-*/uv /usr/local/bin/uv \
+    && uv pip install --python /opt/hermes/.venv/bin/python faster-whisper
 
 # Auto-load /opt/data/.env in shells (gh, turso, wrangler, bws, etc.)
 COPY scripts/load-data-env.sh /etc/hermes/load-data-env.sh
