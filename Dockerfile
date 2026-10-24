@@ -49,10 +49,12 @@ RUN curl -fsSL https://ntn.dev | bash \
 # Wrangler is used via `npx wrangler` (not installed globally); npm 12 caches
 # it under HOME on the persisted data volume.
 
-# Speech-to-text for voice memo transcription.
+# Speech-to-text for voice memo transcription; Exa SDK for web search.
 # The base image no longer exposes the pm-managed uv on PATH.
 RUN ln -sf /opt/hermes/tools/uv-*/uv /usr/local/bin/uv \
-    && uv pip install --python /opt/hermes/.venv/bin/python faster-whisper
+    && uv pip install --python /opt/hermes/.venv/bin/python \
+        faster-whisper \
+        exa-py
 
 # Auto-load /opt/data/.env in shells (gh, turso, wrangler, bws, etc.)
 COPY scripts/load-data-env.sh /etc/hermes/load-data-env.sh
